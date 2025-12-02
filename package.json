@@ -1,0 +1,18 @@
+{
+  "name": "x-va-0",
+  "version": "1.0.0",
+  "main": "gameManager.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^5.2.1",
+    "ws": "^8.18.3"
+  }
+}
