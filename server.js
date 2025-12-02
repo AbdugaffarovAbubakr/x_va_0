@@ -24,13 +24,23 @@ app.get("/game/:id", (req, res) => {
 });
 
 // --- WebSocket ulanish ---
-wss.on("connection", (ws) => {
+wss.on("connection", (ws, req) => {
+    const remote = req.socket.remoteAddress + ":" + req.socket.remotePort;
+    console.log("Yangi WebSocket ulanish:", remote);
+
     ws.on("message", (msg) => {
-        const data = JSON.parse(msg);
-        gameManager.handleMessage(ws, data);
+        try {
+            const data = JSON.parse(msg);
+            console.log("WebSocket message from", remote, data);
+            gameManager.handleMessage(ws, data);
+        } catch (err) {
+            console.error("WebSocket: JSON parse xatosi:", err, "raw:", msg);
+            ws.send(JSON.stringify({ error: "Invalid message" }));
+        }
     });
 
     ws.on("close", () => {
+        console.log("WebSocket yopildi:", remote);
         gameManager.disconnect(ws);
     });
 });

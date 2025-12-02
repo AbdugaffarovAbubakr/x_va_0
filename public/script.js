@@ -1,11 +1,22 @@
-const gameId = window.location.pathname.split("/").pop();
+const gameId = (() => {
+    const parts = window.location.pathname.split("/").filter(Boolean);
+    const id = parts[parts.length - 1];
+    if (!id || id === "game.html") {
+        alert("Game ID topilmadi. Iltimos, o'yin havolasiga to'g'ri kiring.");
+        console.error("Game ID topilmadi. pathname=", window.location.pathname);
+    }
+    return id;
+})();
+
 const password = prompt("Parolni kiriting:");
 
-const ws = new WebSocket(`ws://${window.location.host}`);
+const ws = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}`);
 
 let myMark = null;
 
 ws.onopen = () => {
+    console.log("WebSocket ochildi, join so'rovi yuborilmoqda:", { gameId, password });
+    if (!gameId) return;
     ws.send(JSON.stringify({
         type: "join",
         gameId,
@@ -13,11 +24,23 @@ ws.onopen = () => {
     }));
 };
 
+ws.onerror = (err) => {
+    console.error("WebSocket xatosi:", err);
+    document.getElementById("status").innerText = "WebSocket xatosi. Konsolni tekshiring.";
+};
+
+ws.onclose = () => {
+    console.warn("WebSocket yopiildi");
+    document.getElementById("status").innerText = "Ulanish uzildi.";
+};
+
 ws.onmessage = (e) => {
+    console.log("Serverdan kelgan:", e.data);
     const data = JSON.parse(e.data);
 
     if (data.error) {
         alert(data.error);
+        document.getElementById("status").innerText = "Xato: " + data.error;
         return;
     }
 
@@ -41,6 +64,7 @@ ws.onmessage = (e) => {
 
     if (data.type === "left") {
         alert(data.message);
+        document.getElementById("status").innerText = "Raqib chiqib ketdi.";
     }
 };
 

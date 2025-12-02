@@ -32,25 +32,36 @@ export default class GameManager {
     }
 
     joinGame(ws, data) {
+        console.log("[joinGame] so'rov:", { gameId: data.gameId, password: data.password });
         const game = this.games[data.gameId];
-        if (!game) return ws.send(JSON.stringify({ error: "Game not found" }));
+        if (!game) {
+            console.log("[joinGame] o'yin topilmadi:", data.gameId);
+            return ws.send(JSON.stringify({ error: "Game not found" }));
+        }
 
-        if (game.password !== data.password)
+        if (game.password !== data.password) {
+            console.log("[joinGame] noto'g'ri parol:", { expected: game.password, got: data.password });
             return ws.send(JSON.stringify({ error: "Wrong password" }));
+        }
 
-        // X bo‘sh bo‘lsa X beramiz, bo‘lmasa O
         let mark = null;
+        console.log("[joinGame] mavjud o'yinchilar:", { X: !!game.players.X, O: !!game.players.O });
         if (!game.players.X) mark = "X";
         else if (!game.players.O) mark = "O";
-        else return ws.send(JSON.stringify({ error: "Game is full" }));
+        else {
+            console.log("[joinGame] o'yin to'liq:", data.gameId);
+            return ws.send(JSON.stringify({ error: "Game is full" }));
+        }
 
         game.players[mark] = ws;
         this.players.set(ws, { gameId: game.id, mark });
 
+        console.log(`[joinGame] ${mark} belgilandi ->`, data.gameId);
+
         ws.send(JSON.stringify({ type: "joined", mark }));
 
-        // Agar ikkalasi tayyor bo‘lsa boshlash
         if (game.players.X && game.players.O) {
+            console.log("[joinGame] ikkala o'yinchi ulandi, start yuborilmoqda:", data.gameId);
             this.broadcast(game.id, { type: "start", turn: game.turn });
         }
     }
