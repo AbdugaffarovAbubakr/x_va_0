@@ -35,6 +35,9 @@ wss.on("connection", (ws) => {
     });
 });
 
-httpServer.listen(3001, () => {
-    console.log("Server http://localhost:3001 da ishlayapti");
+const PORT = process.env.PORT || 3001;
+
+httpServer.listen(PORT, () => {
+    console.log("Server ishlayapti:", PORT);
 });
+
